@@ -28,7 +28,6 @@
   "homepage": "https://github.com/sbrsubuvga/flutter_forge_ai/tree/main/vscode",
   "license": "MIT",
   "main": "./out/extension.js",
-  "icon": "media/icon.png",
   "activationEvents": [],
   "contributes": {
     "viewsContainers": {
