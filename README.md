@@ -42,6 +42,26 @@ The snapshot is structured JSON — no screenshots, no guessing, no "it works on
 
 ---
 
+## ✅ What's actually in the box
+
+Not promises — these are shipped and covered by tests.
+
+| Capability                                   | One-call API                                           | UI                                   |
+| -------------------------------------------- | ------------------------------------------------------ | ------------------------------------ |
+| 4-tab DevTools dashboard                     | `FFDevWrapper(child: ...)`                             | `FFDevDashboard` — DB / API / State / Logs |
+| Database console + raw-SQL runner            | `FFDbHelper.instance.database`                         | DB tab                               |
+| Alice-style API inspector with cURL export   | `FFApiClient.instance.dio`                             | API tab + detail view                |
+| Riverpod state viewer (live + history)       | `FFStateObserver()` (as `ProviderScope` observer)      | State tab                            |
+| Colour-coded log viewer with filters         | `FFLogger.info` / `.error` / `.warning` / …            | Logs tab                             |
+| AI Debug Snapshot (the killer flow)          | `FFSnapshotGenerator.generate(problem: '...')`         | 🤖 FAB → preview → Copy AI prompt    |
+| Sensitive-data masking                       | automatic on all captures                              | —                                    |
+| Release-mode auto-disable                    | `kReleaseMode` gate                                    | —                                    |
+| Shake / Alt+F12 / draggable FAB triggers     | all wired by `FFDevWrapper`                            | —                                    |
+
+> **No vaporware section in this README.** Everything above is in the latest published version on pub.dev.
+
+---
+
 ## ✨ Why FlutterForge AI?
 
 | Old paradigm                    | FlutterForge AI                      |
@@ -164,11 +184,14 @@ Open the **Database Console** tab to browse tables, inspect schema, and run ad-h
 ### Generate an AI snapshot (one call)
 
 ```dart
-final snap   = await FFSnapshotGenerator.generate(problem: 'Login loop');
+// Preferred: top-level facade on FlutterForgeAI.
+final snap   = await FlutterForgeAI.generateSnapshot(problem: 'Login loop');
 final prompt = FFPromptFormatter.format(snap);
 await FFClipboardHelper.copy(prompt);
 // Snackbar: "✅ Prompt copied. Paste to your AI assistant."
 ```
+
+`FlutterForgeAI.generateSnapshot(...)` forwards to `FFSnapshotGenerator.generate(...)` — both APIs are supported; use whichever reads better at the call site.
 
 Or just tap the 🤖 FAB and use the built-in preview screen.
 
@@ -337,14 +360,24 @@ See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## 🗺️ Roadmap
 
-- GraphQL interceptor parity
-- Bloc / Provider observer adapters
-- Supabase / Firebase native adapters
-- Inline "diff" view in the State Viewer
-- Time-travel debugger for state events
-- CLI (`flutterforge init`) — scaffolds devtools boilerplate into an existing app
-- VS Code extension — inspect DB / logs / trigger AI debug from the IDE
-- Remote debug aggregator — opt-in server that receives snapshots from QA devices
+**Shipped** (this repo):
+
+- ✅ Flutter package (`flutterforge_ai`, on pub.dev)
+- ✅ CLI (`flutterforge init` / `doctor` / `snapshot`) — see [`cli/`](cli/)
+- 🟡 VS Code extension v0.2 — tree view + rich webview, see [`vscode/`](vscode/) (needs `npm install && npm run compile` to build locally)
+- 🟡 Cloud receiver scaffold — see [`cloud/`](cloud/) (dev-only; no auth / persistence yet — parked post-v1)
+
+**Up next (ordered by impact, not effort):**
+
+1. 🔴 **One-tap "Diagnose with AI"** — in-app LLM call (bring-your-own-key: Anthropic / OpenAI). The snapshot round-trips to the model and the fix streams back into the preview screen. *This is the magic moment; the clipboard copy is the fallback.*
+2. 🔴 **CLI `init --auto-wire`** — run `flutter pub get` and patch `main.dart` when it matches a known shape (counter template, generated project), so "zero config" actually means zero.
+3. 🔴 **`doctor --fix`** — apply the fixes the doctor suggests.
+4. 🟠 Inline "diff" view in the State Viewer + time-travel scrubber.
+5. 🟠 GraphQL interceptor parity.
+6. 🟠 Bloc / Provider observer adapters.
+7. 🟠 Supabase / Firebase adapters.
+8. 🟠 VS Code live mode — attach to a running Flutter app via DevTools Extensions, pull snapshots without picking a file.
+9. ⚪ Cloud v1 — auth, Postgres, agent inside the Flutter package that POSTs snapshots on uncaught error.
 
 ---
 

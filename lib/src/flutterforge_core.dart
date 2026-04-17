@@ -10,6 +10,8 @@ import 'core/logger/ff_logger.dart';
 import 'core/network/ff_api_client.dart';
 import 'core/state/ff_state_observer.dart';
 import 'core/state/ff_state_store.dart';
+import 'snapshot/ff_snapshot_generator.dart';
+import 'snapshot/ff_snapshot_model.dart';
 import 'utils/ff_constants.dart';
 
 /// Main entry point to FlutterForge AI.
@@ -68,6 +70,17 @@ class FlutterForgeAI {
   /// `config.enableDevTools`).
   static bool get showDevTools =>
       _initialized && !kReleaseMode && config.enableDevTools;
+
+  /// Ergonomic facade over [FFSnapshotGenerator.generate].
+  ///
+  /// Prefer this over calling the generator directly — it keeps call sites
+  /// colocated with the rest of the top-level SDK API.
+  ///
+  /// ```dart
+  /// final snap = await FlutterForgeAI.generateSnapshot(problem: 'Login loop');
+  /// ```
+  static Future<FFSnapshot> generateSnapshot({String? problem}) =>
+      FFSnapshotGenerator.generate(problem: problem);
 
   /// Initialises the SDK. Idempotent — subsequent calls return immediately.
   static Future<void> init({FFConfig? config}) async {

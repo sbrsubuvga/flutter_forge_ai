@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-04-17
+
+### Added
+- `FlutterForgeAI.generateSnapshot(problem: '…')` — thin top-level facade over `FFSnapshotGenerator.generate(...)`. Both continue to work; prefer the facade at call sites that already reference `FlutterForgeAI`.
+
+### Changed
+- **README**: new "What's actually in the box" capability table right after the 30-second workflow, so reviewers can see the shipped feature set (DevDashboard / snapshot / interceptor / masking / etc.) without scrolling. Roadmap section rewritten with an honest shipped/next split — CLI marked ✅, cloud parked, "Diagnose with AI" flagged as the real next move.
+- **ECOSYSTEM.md**: status table now labels the VS Code extension as v0.2 in-repo (not just a scaffold), the CLI with its current limits, and the cloud as "parked post-v1".
+
 ## [0.1.1] - 2026-04-17
 
 ### Changed

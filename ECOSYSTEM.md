@@ -32,12 +32,12 @@ FlutterForge AI is not a single package — it's a 4-component ecosystem unified
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Folder   | Component                    | Status                   | Ships as                                 |
-| -------- | ---------------------------- | ------------------------ | ---------------------------------------- |
-| root     | **Flutter package**          | ✅ **published**         | [pub.dev/packages/flutterforge_ai](https://pub.dev/packages/flutterforge_ai) |
-| `cli/`   | **CLI tool**                 | ✅ ready to publish      | pub.dev global activate `flutterforge_ai_cli` |
-| `vscode/`| **VS Code extension**        | 🟡 scaffold              | VS Code Marketplace (post-auth)          |
-| `cloud/` | **Cloud receiver + dashboard** | 🟡 scaffold (dev only) | self-hosted Docker Compose               |
+| Folder   | Component                    | Status                                                                                                                                 | Ships as                                                                          |
+| -------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| root     | **Flutter package**          | ✅ published (v0.1.1)                                                                                                                   | [pub.dev/packages/flutterforge_ai](https://pub.dev/packages/flutterforge_ai)      |
+| `cli/`   | **CLI tool**                 | ✅ ready to publish (v0.1.0, 16 tests). Edits `pubspec.yaml` + prints the `main.dart` snippet. Does **not** yet run `flutter pub get` or patch `main.dart` — see roadmap. | `dart pub global activate flutterforge_ai_cli`                                    |
+| `vscode/`| **VS Code extension**        | 🟡 v0.2 in repo — Activity Bar panel, history, CLI-in-terminal commands, rich webview. Build locally with `npm install && npm run compile`. Not yet on the Marketplace. | VS Code Marketplace (post-auth)                                                   |
+| `cloud/` | **Cloud receiver + dashboard** | 🟡 scaffold, dev-only (in-memory, no auth) — **parked post-v1** per the current priority plan.                                           | self-hosted Docker Compose                                                        |
 
 ---
 
