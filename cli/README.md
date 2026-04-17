@@ -14,14 +14,24 @@ Make sure `$HOME/.pub-cache/bin` is on your `PATH`.
 
 ### `flutterforge init`
 
-Adds `flutterforge_ai` (and optionally `flutter_riverpod`) to an existing Flutter project's `pubspec.yaml`, then prints the minimal wiring snippet for `main.dart`.
+Adds `flutterforge_ai` (and optionally `flutter_riverpod`) to an existing Flutter project's `pubspec.yaml`. Runs `flutter pub get` automatically at the end. Can rewrite `lib/main.dart` for you when it matches a known template.
 
 ```bash
-flutterforge init                # run in the project root
-flutterforge init --path ~/apps/my_app
-flutterforge init --dry-run      # show what would change, don't write
+flutterforge init                      # add deps, print snippet, run `pub get`
+flutterforge init --auto-wire          # …AND rewrite lib/main.dart (keeps .bak)
+flutterforge init --path ~/apps/app
+flutterforge init --dry-run            # show what would change, don't write
+flutterforge init --no-run-pub-get     # skip the auto `flutter pub get`
 flutterforge init --no-include-riverpod
+flutterforge init --app-name "My App"  # override the generated FFConfig name
 ```
+
+Auto-wire rules:
+
+- Targets the default `flutter create` counter template **and** minimal `MyApp + runApp(const MyApp())` files.
+- Writes `lib/main.dart.bak` before overwriting.
+- Refuses anything it doesn't recognise — you'll get the manual snippet to paste.
+- No-op if `main.dart` already imports or calls FlutterForge APIs.
 
 ### `flutterforge doctor`
 
@@ -30,16 +40,17 @@ Audits that an existing Flutter project is wired up correctly. Exits with the nu
 ```bash
 flutterforge doctor
 flutterforge doctor --path ~/apps/my_app
+flutterforge doctor --fix              # apply safe pubspec remediations
 ```
 
 Checks:
 
 - ✓ `pubspec.yaml` exists
-- ✓ `flutterforge_ai` is listed in `dependencies`
+- ✓ `flutterforge_ai` is listed in `dependencies`   (`--fix` applies)
 - ⚠ `flutter_riverpod` is listed (optional, for `FFStateObserver`)
 - ✓ `lib/main.dart` exists
-- ✓ `FlutterForgeAI.init(...)` is called
-- ✓ `FFDevWrapper` is present
+- ✓ `FlutterForgeAI.init(...)` is called             (fix via `init --auto-wire`)
+- ✓ `FFDevWrapper` is present                        (fix via `init --auto-wire`)
 - ⚠ `FFStateObserver` is registered (optional)
 
 ### `flutterforge snapshot`

@@ -7,14 +7,11 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 import '../constants.dart';
 import '../logger.dart';
+import '../main_dart_wiring.dart';
 
-/// Adds `flutterforge_ai` to an existing Flutter project's `pubspec.yaml`
-/// and prints the minimal wiring snippet the developer needs to paste into
-/// `main.dart`.
-///
-/// Does NOT rewrite `main.dart` automatically — too many project-specific
-/// shapes (MaterialApp vs GoRouter, ProviderScope placement, etc.) to do
-/// that safely.
+/// Adds `flutterforge_ai` to an existing Flutter project's `pubspec.yaml`,
+/// optionally patches `lib/main.dart` when it matches a known template, and
+/// optionally runs `flutter pub get`.
 class InitCommand extends Command<int> {
   /// Creates the command.
   InitCommand(this._logger) {
@@ -29,6 +26,22 @@ class InitCommand extends Command<int> {
         'include-riverpod',
         defaultsTo: true,
         help: 'Add flutter_riverpod if not already present.',
+      )
+      ..addFlag(
+        'run-pub-get',
+        defaultsTo: true,
+        help: 'Run `flutter pub get` after editing pubspec.yaml.',
+      )
+      ..addFlag(
+        'auto-wire',
+        negatable: false,
+        help: 'Patch lib/main.dart when it matches a known template. A '
+            'backup of the original is written to lib/main.dart.bak.',
+      )
+      ..addOption(
+        'app-name',
+        help: 'Used inside the generated main.dart (auto-wire mode). '
+            'Defaults to the pubspec `name` field.',
       )
       ..addFlag(
         'dry-run',
@@ -51,6 +64,9 @@ class InitCommand extends Command<int> {
     final String root = argResults!['path'] as String;
     final bool dryRun = argResults!['dry-run'] as bool;
     final bool includeRiverpod = argResults!['include-riverpod'] as bool;
+    final bool runPubGet = argResults!['run-pub-get'] as bool;
+    final bool autoWire = argResults!['auto-wire'] as bool;
+    final String? appNameArg = argResults!['app-name'] as String?;
 
     final File pubspec = File(p.join(root, 'pubspec.yaml'));
     if (!pubspec.existsSync()) {
@@ -63,11 +79,14 @@ class InitCommand extends Command<int> {
     final YamlEditor editor = YamlEditor(original);
     final YamlMap doc = loadYaml(original) as YamlMap;
 
-    if (_isFlutterProject(doc) == false) {
+    if (!_isFlutterProject(doc)) {
       _logger.error('pubspec.yaml at ${pubspec.path} is not a Flutter app.');
       _logger.hint('dependencies must include `flutter: sdk: flutter`.');
       return 1;
     }
+
+    final String appName =
+        appNameArg ?? doc['name']?.toString() ?? 'My App';
 
     final YamlMap? deps = doc['dependencies'] as YamlMap?;
     final bool hasFlutterforge =
@@ -93,26 +112,123 @@ class InitCommand extends Command<int> {
       _logger.success('adding flutter_riverpod: ^2.5.1');
     }
 
-    if (editor.toString() == original) {
+    final String updatedPubspec = editor.toString();
+    final bool pubspecChanged = updatedPubspec != original;
+
+    if (!pubspecChanged) {
       _logger.info('pubspec.yaml already has everything it needs.');
     } else if (dryRun) {
       _logger.warning('--dry-run — pubspec.yaml NOT written.');
-      _logger.dim('');
-      _logger.dim('Diff preview (first 40 changed lines):');
-      _printDiff(original, editor.toString());
+      _printDiff(original, updatedPubspec);
     } else {
-      pubspec.writeAsStringSync(editor.toString());
+      pubspec.writeAsStringSync(updatedPubspec);
       _logger.success('wrote ${pubspec.path}');
     }
 
-    _logger.info('');
-    _logger.info('Next steps:');
-    _logger.hint('flutter pub get');
-    _logger.hint(
-        'Paste the snippet below into your `lib/main.dart` or equivalent.');
-    _logger.info('');
-    _logger.info(_mainSnippet());
+    if (autoWire) {
+      final int wireResult = await _autoWire(
+        root: root,
+        appName: appName,
+        dryRun: dryRun,
+      );
+      if (wireResult != 0) return wireResult;
+    }
+
+    if (runPubGet && !dryRun) {
+      await _runPubGet(root);
+    }
+
+    if (!autoWire) {
+      _logger.info('');
+      _logger.info('Next steps:');
+      if (!runPubGet) _logger.hint('flutter pub get');
+      _logger.hint(
+          'Paste the snippet below into `lib/main.dart` or equivalent.');
+      _logger.info('');
+      _logger.info(_mainSnippet(appName));
+    }
     return 0;
+  }
+
+  /// Tries to patch `lib/main.dart`. Returns 0 on success / no-op, non-zero
+  /// on failure.
+  Future<int> _autoWire({
+    required String root,
+    required String appName,
+    required bool dryRun,
+  }) async {
+    final File mainFile = File(p.join(root, 'lib', 'main.dart'));
+    if (!mainFile.existsSync()) {
+      _logger.warning(
+          '--auto-wire: lib/main.dart not found — skipping.');
+      return 0;
+    }
+    final String original = mainFile.readAsStringSync();
+    final WiringShape shape = MainDartWiring.classify(original);
+
+    switch (shape) {
+      case WiringShape.alreadyWired:
+        _logger.dim('lib/main.dart already references FlutterForge — '
+            'skipping auto-wire.');
+        return 0;
+      case WiringShape.unknown:
+        _logger.warning(
+          '--auto-wire: lib/main.dart does not match a known template. '
+          'Refusing to modify it automatically.',
+        );
+        _logger.hint('Paste the snippet at the end of this output '
+            'into main.dart manually.');
+        return 0;
+      case WiringShape.counterTemplate:
+      case WiringShape.minimalMyApp:
+        break;
+    }
+
+    final String wired;
+    try {
+      wired = MainDartWiring.wire(original, appName: appName);
+    } on StateError catch (e) {
+      _logger.error('Auto-wire failed: ${e.message}');
+      return 1;
+    }
+
+    if (dryRun) {
+      _logger.warning(
+          '--dry-run — lib/main.dart NOT written. Preview of first 20 changed lines:');
+      _printDiff(original, wired);
+      return 0;
+    }
+
+    final File backup = File('${mainFile.path}.bak');
+    backup.writeAsStringSync(original);
+    mainFile.writeAsStringSync(wired);
+    _logger.success('wrote ${mainFile.path}');
+    _logger.dim('original backed up to ${backup.path}');
+    return 0;
+  }
+
+  Future<void> _runPubGet(String root) async {
+    _logger.info('');
+    _logger.info('Running `flutter pub get`…');
+    try {
+      final ProcessResult result = await Process.run(
+        'flutter',
+        <String>['pub', 'get'],
+        workingDirectory: root,
+      );
+      if (result.exitCode == 0) {
+        _logger.success('flutter pub get OK');
+      } else {
+        _logger.warning(
+            'flutter pub get exited ${result.exitCode}. '
+            'Run it manually to see the error.');
+        final String stderr = result.stderr.toString();
+        if (stderr.isNotEmpty) _logger.dim(stderr);
+      }
+    } catch (e) {
+      _logger.warning('Could not run flutter: $e');
+      _logger.hint('Run `flutter pub get` manually in $root.');
+    }
   }
 
   bool _isFlutterProject(YamlMap doc) {
@@ -135,7 +251,7 @@ class InitCommand extends Command<int> {
     }
   }
 
-  String _mainSnippet() => '''
+  String _mainSnippet(String appName) => '''
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:$kPackageName/$kPackageName.dart';
@@ -143,18 +259,27 @@ import 'package:$kPackageName/$kPackageName.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterForgeAI.init(
-    config: const FFConfig(appName: 'My App'),
+    config: const FFConfig(appName: '$appName'),
   );
   runApp(
     ProviderScope(
       observers: [FFStateObserver()],
-      child: MaterialApp(
-        builder: (ctx, child) =>
-            FFDevWrapper(child: child ?? const SizedBox.shrink()),
-        home: const MyHomePage(),
-      ),
+      child: const MyApp(),
     ),
   );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      builder: (ctx, child) =>
+          FFDevWrapper(child: child ?? const SizedBox.shrink()),
+      home: const MyHomePage(),
+    );
+  }
 }
 ''';
 }

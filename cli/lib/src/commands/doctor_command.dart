@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 import '../constants.dart';
 import '../logger.dart';
@@ -12,15 +13,26 @@ import '../logger.dart';
 ///
 /// Each check prints a ✓ or ✗ line; every failure emits a hint describing
 /// the specific fix. Exit code is the number of failures.
+///
+/// Pass `--fix` to have the doctor attempt the safe remediations (adding
+/// `flutterforge_ai` to `pubspec.yaml`). Anything that requires touching
+/// `main.dart` is deferred to `flutterforge init --auto-wire`.
 class DoctorCommand extends Command<int> {
   /// Creates the command.
   DoctorCommand(this._logger) {
-    argParser.addOption(
-      'path',
-      abbr: 'p',
-      defaultsTo: '.',
-      help: 'Path to the Flutter project root (must contain pubspec.yaml).',
-    );
+    argParser
+      ..addOption(
+        'path',
+        abbr: 'p',
+        defaultsTo: '.',
+        help: 'Path to the Flutter project root (must contain pubspec.yaml).',
+      )
+      ..addFlag(
+        'fix',
+        negatable: false,
+        help: 'Apply safe remediations (pubspec.yaml edits). Does not '
+            'rewrite main.dart — use `flutterforge init --auto-wire` for that.',
+      );
   }
 
   final CliLogger _logger;
@@ -35,52 +47,70 @@ class DoctorCommand extends Command<int> {
   @override
   Future<int> run() async {
     final String root = argResults!['path'] as String;
+    final bool fix = argResults!['fix'] as bool;
     int failures = 0;
+    int fixesApplied = 0;
 
-    failures += _check(
-      title: 'pubspec.yaml exists',
-      ok: File(p.join(root, 'pubspec.yaml')).existsSync(),
-      hint: 'Pass --path to point at the Flutter project root.',
-    );
+    final File pubspec = File(p.join(root, 'pubspec.yaml'));
+    if (!pubspec.existsSync()) {
+      _logger.error('pubspec.yaml not found at ${pubspec.path}');
+      _logger.hint('Pass --path to point at the Flutter project root.');
+      return 1;
+    }
+    _logger.success('pubspec.yaml exists');
 
-    if (failures > 0) return failures;
+    YamlMap pubspecDoc = loadYaml(pubspec.readAsStringSync()) as YamlMap;
+    YamlMap? deps = pubspecDoc['dependencies'] as YamlMap?;
+    bool hasPackage = deps != null && deps.containsKey(kPackageName);
 
-    final YamlMap pubspec = loadYaml(
-      File(p.join(root, 'pubspec.yaml')).readAsStringSync(),
-    ) as YamlMap;
-
-    final YamlMap? deps = pubspec['dependencies'] as YamlMap?;
-    final bool hasPackage =
-        deps != null && deps.containsKey(kPackageName);
-    failures += _check(
-      title: '$kPackageName listed in dependencies',
-      ok: hasPackage,
-      hint: 'Run: flutterforge init',
-    );
+    if (!hasPackage) {
+      if (fix) {
+        final YamlEditor editor =
+            YamlEditor(pubspec.readAsStringSync());
+        editor.update(
+          <String>['dependencies', kPackageName],
+          kPackageVersionConstraint,
+        );
+        pubspec.writeAsStringSync(editor.toString());
+        _logger.success(
+            '$kPackageName added to pubspec.yaml (--fix applied)');
+        fixesApplied++;
+        pubspecDoc = loadYaml(pubspec.readAsStringSync()) as YamlMap;
+        deps = pubspecDoc['dependencies'] as YamlMap?;
+        hasPackage = deps != null && deps.containsKey(kPackageName);
+      } else {
+        _logger.error('$kPackageName not listed in dependencies');
+        _logger.hint('Run: flutterforge init  (or doctor --fix)');
+        failures++;
+      }
+    } else {
+      _logger.success('$kPackageName listed in dependencies');
+    }
 
     final bool hasRiverpod =
         deps != null && deps.containsKey('flutter_riverpod');
-    failures += _check(
-      title: 'flutter_riverpod listed (optional, for FFStateObserver)',
-      ok: hasRiverpod,
-      hint: 'Add to pubspec.yaml: flutter_riverpod: ^2.5.1',
-      warnOnly: true,
-    );
+    if (!hasRiverpod) {
+      _logger.warning(
+          'flutter_riverpod listed (optional, for FFStateObserver) — not configured');
+      _logger.hint('Add to pubspec.yaml: flutter_riverpod: ^2.5.1');
+    } else {
+      _logger.success('flutter_riverpod listed (optional, for FFStateObserver)');
+    }
 
     final File? mainFile = _findMainFile(root);
-    failures += _check(
-      title: 'lib/main.dart found',
-      ok: mainFile != null,
-      hint: 'Create lib/main.dart or pass --path to the right project.',
-    );
-    if (mainFile == null) return failures;
+    if (mainFile == null) {
+      _logger.error('lib/main.dart not found');
+      _logger.hint('Create lib/main.dart or pass --path to the right project.');
+      return failures + 1;
+    }
+    _logger.success('lib/main.dart found');
 
     final String source = mainFile.readAsStringSync();
 
     failures += _check(
       title: 'FlutterForgeAI.init(...) called',
       ok: source.contains('FlutterForgeAI.init'),
-      hint: 'See: flutterforge init (prints the snippet).',
+      hint: 'See: flutterforge init --auto-wire (patches main.dart for you).',
     );
 
     failures += _check(
@@ -90,7 +120,7 @@ class DoctorCommand extends Command<int> {
           'Wrap inside MaterialApp.builder: builder: (ctx, c) => FFDevWrapper(child: c!)',
     );
 
-    failures += _check(
+    _check(
       title: 'FFStateObserver registered (optional)',
       ok: source.contains('FFStateObserver'),
       hint:
@@ -100,9 +130,16 @@ class DoctorCommand extends Command<int> {
 
     _logger.info('');
     if (failures == 0) {
-      _logger.success('All checks passed.');
+      _logger.success(fixesApplied > 0
+          ? 'All checks passed ($fixesApplied fix applied).'
+          : 'All checks passed.');
     } else {
-      _logger.error('$failures check(s) failed.');
+      _logger.error('$failures check(s) failed.'
+          '${fixesApplied > 0 ? ' ($fixesApplied fix applied.)' : ''}');
+      if (!fix) {
+        _logger.hint('Re-run with --fix to apply safe remediations '
+            '(pubspec edits only).');
+      }
     }
     return failures;
   }
