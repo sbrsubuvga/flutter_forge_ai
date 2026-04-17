@@ -1,8 +1,8 @@
 {
   "name": "flutterforge-ai",
   "displayName": "FlutterForge AI",
-  "description": "Open and explore AI Debug Snapshots produced by the flutterforge_ai Flutter package.",
-  "version": "0.1.0",
+  "description": "Open, explore, and copy AI prompts from AI Debug Snapshots produced by the flutterforge_ai Flutter package.",
+  "version": "0.2.0",
   "publisher": "sbrsubuvga",
   "engines": {
     "vscode": "^1.85.0"
@@ -29,24 +29,115 @@
   "license": "MIT",
   "main": "./out/extension.js",
   "icon": "media/icon.png",
-  "activationEvents": [
-    "onLanguage:json",
-    "onCommand:flutterforge.openSnapshot",
-    "onCommand:flutterforge.copyAiPrompt"
-  ],
+  "activationEvents": [],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "flutterforge",
+          "title": "FlutterForge AI",
+          "icon": "media/sidebar.svg"
+        }
+      ]
+    },
+    "views": {
+      "flutterforge": [
+        {
+          "id": "flutterforgeExplorer",
+          "name": "Recent snapshots",
+          "contextualTitle": "FlutterForge AI"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "flutterforge.openSnapshot",
-        "title": "FlutterForge: Open AI Debug Snapshot…",
-        "category": "FlutterForge"
+        "title": "Open AI Debug Snapshot…",
+        "category": "FlutterForge",
+        "icon": "$(folder-opened)"
       },
       {
         "command": "flutterforge.copyAiPrompt",
-        "title": "FlutterForge: Copy AI Prompt from Snapshot…",
+        "title": "Copy AI Prompt from Snapshot…",
+        "category": "FlutterForge",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "flutterforge.refreshHistory",
+        "title": "Refresh",
+        "category": "FlutterForge",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "flutterforge.clearHistory",
+        "title": "Clear History",
+        "category": "FlutterForge",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "flutterforge.removeSnapshotFromHistory",
+        "title": "Remove from History",
+        "category": "FlutterForge",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "flutterforge.openSnapshotFromHistory",
+        "title": "Open Snapshot",
         "category": "FlutterForge"
+      },
+      {
+        "command": "flutterforge.runDoctor",
+        "title": "Run Doctor in Terminal",
+        "category": "FlutterForge",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "flutterforge.runInit",
+        "title": "Run Init in Terminal",
+        "category": "FlutterForge",
+        "icon": "$(rocket)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "flutterforge.openSnapshot",
+          "when": "view == flutterforgeExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "flutterforge.refreshHistory",
+          "when": "view == flutterforgeExplorer",
+          "group": "navigation@2"
+        },
+        {
+          "command": "flutterforge.clearHistory",
+          "when": "view == flutterforgeExplorer",
+          "group": "overflow"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "flutterforge.removeSnapshotFromHistory",
+          "when": "view == flutterforgeExplorer && viewItem == flutterforge.snapshot",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "flutterforge.removeSnapshotFromHistory",
+          "when": "false"
+        },
+        {
+          "command": "flutterforge.openSnapshotFromHistory",
+          "when": "false"
+        },
+        {
+          "command": "flutterforge.refreshHistory",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "title": "FlutterForge AI",
       "properties": {
@@ -62,14 +153,15 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint src --ext ts"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.12.7",
     "@types/vscode": "^1.85.0",
-    "@vscode/test-electron": "^2.3.9",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
+    "eslint": "^8.57.0",
     "typescript": "^5.4.5"
   }
 }

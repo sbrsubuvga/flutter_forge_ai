@@ -1,7 +1,7 @@
-# Sibling ecosystem components — each has its own README and tooling.
-cli/
-vscode/
-cloud/
+# Note: cli/, vscode/, cloud/ are sibling packages — pub already excludes
+# any subdirectory that has its own pubspec.yaml, so they don't need to be
+# re-listed here. Listing them breaks their own `dart pub publish` because
+# their files end up hidden by this file.
 
 # Root build / test caches.
 build/

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutterforge_ai_cli/flutterforge_cli.dart';
+import 'package:flutterforge_ai_cli/flutterforge_ai_cli.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 

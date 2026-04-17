@@ -1,4 +1,4 @@
-import 'package:flutterforge_ai_cli/flutterforge_cli.dart';
+import 'package:flutterforge_ai_cli/flutterforge_ai_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
