@@ -1,6 +1,6 @@
 name: flutterforge_ai
 description: AI-Ready Flutter template with built-in DB console, API inspector, state viewer, log viewer, and AI debug snapshots. Build observable apps that AI can debug with full context.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/sbrsubuvga/flutter_forge_ai
 repository: https://github.com/sbrsubuvga/flutter_forge_ai
 issue_tracker: https://github.com/sbrsubuvga/flutter_forge_ai/issues

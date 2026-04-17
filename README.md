@@ -1,32 +1,68 @@
 # 🛠️ FlutterForge AI
 
-> **AI-Ready Flutter template** — build observable apps that AI can debug with full context.
+> **FlutterForge AI is a developer toolkit that makes Flutter apps _observable_ and _AI-debuggable_ — DB, API, state, and logs in one place, exportable as a single AI-ready JSON snapshot.**
 
 [![pub version](https://img.shields.io/pub/v/flutterforge_ai.svg)](https://pub.dev/packages/flutterforge_ai)
 [![pub points](https://img.shields.io/pub/points/flutterforge_ai)](https://pub.dev/packages/flutterforge_ai/score)
 [![likes](https://img.shields.io/pub/likes/flutterforge_ai)](https://pub.dev/packages/flutterforge_ai)
 [![popularity](https://img.shields.io/pub/popularity/flutterforge_ai)](https://pub.dev/packages/flutterforge_ai)
 [![CI](https://github.com/sbrsubuvga/flutter_forge_ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sbrsubuvga/flutter_forge_ai/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/codecov/c/github/sbrsubuvga/flutter_forge_ai)](https://codecov.io/gh/sbrsubuvga/flutter_forge_ai)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**One tap. One snapshot. Your AI fixes the bug.**
+> One tap. One snapshot. Your AI fixes the bug.
 
-FlutterForge AI turns `print()` debugging into a solved problem. Tap the 🤖
-button in your app, paste the generated JSON into ChatGPT / Claude / Cursor,
-and get an accurate fix in seconds — complete with the database state, API
-history, provider values, and logs at the moment things went wrong.
+Tap the 🤖 button in your app, paste the generated JSON into ChatGPT / Claude / Cursor, and get an accurate fix in seconds — complete with the database state, API history, provider values, and logs at the moment things went wrong.
+
+<p align="center">
+  <img src="doc/images/hero.gif" alt="FlutterForge AI debug workflow" width="720" />
+  <br/>
+  <em>(Replace <code>doc/images/hero.gif</code> with your own recording — see <a href="doc/WORKFLOW.md">doc/WORKFLOW.md</a>.)</em>
+</p>
+
+---
+
+## 🚀 30-second workflow
+
+```
+┌─ You hit a bug ─────────────────────────────────────────────────┐
+│                                                                 │
+│   1. Tap 🤖 in your app  (or shake, or Alt+F12)                 │
+│   2. Type the symptom:  "Login loops after OAuth refresh"       │
+│   3. Tap "Copy AI prompt"                                       │
+│   4. Paste into ChatGPT / Claude / Cursor                       │
+│   5. Get a contextual fix — the AI sees your DB rows, last      │
+│      API calls, current provider state, and recent logs.        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+The snapshot is structured JSON — no screenshots, no guessing, no "it works on my machine".
 
 ---
 
 ## ✨ Why FlutterForge AI?
 
-| Old paradigm                 | New paradigm                     |
-| ---------------------------- | -------------------------------- |
-| `print()` → guess → retry    | Tap button → paste → get fix     |
-| Hours of debugging           | 30 seconds                       |
-| Screenshots + vague prompts  | Structured JSON with real state  |
-| "It works on my machine"     | "Here's exactly what happened"   |
+| Old paradigm                    | FlutterForge AI                      |
+| ------------------------------- | ------------------------------------ |
+| `print()` → guess → retry       | Tap button → paste → get fix         |
+| Hours of back-and-forth         | 30 seconds                           |
+| Screenshot + vague prompt       | Structured JSON with real runtime   |
+| "It works on my machine"        | "Here's exactly what happened"       |
+
+### How it's different from Alice / Talker / pretty_dio_logger
+
+| Capability                            | FlutterForge AI | Alice | Talker | pretty_dio_logger |
+| ------------------------------------- | :-------------: | :---: | :----: | :---------------: |
+| Dio interceptor + API inspector        | ✅              | ✅    | ✅     | ✅                |
+| Colour-coded log viewer                | ✅              | —     | ✅     | —                 |
+| Live SQLite console + raw SQL runner   | ✅              | —     | —      | —                 |
+| Riverpod state viewer (live + history) | ✅              | —     | —      | —                 |
+| **Unified 4-tab devtools dashboard**   | ✅              | —     | —      | —                 |
+| **One-tap AI debug snapshot (JSON)**   | ✅              | —     | —      | —                 |
+| Sensitive-data masking                 | ✅              | —     | —      | —                 |
+| Release-mode auto-disable              | ✅              | —     | —      | —                 |
+
+FlutterForge AI is *not* another logger — it's a **debugging surface** that unifies every runtime signal into a single export designed for AI assistants.
 
 ---
 
@@ -40,7 +76,7 @@ history, provider values, and logs at the moment things went wrong.
 - 📱 **Multiple triggers** — draggable FAB, green 🤖 FAB, shake-to-open (mobile), Alt+F12 (desktop).
 - 🛡️ **Sensitive-data masking** — headers, body keys, and URL query params automatically redacted.
 - 🔒 **Release-safe** — every devtool auto-disabled in `kReleaseMode`.
-- 🧪 **Well tested** — ring buffer, masker, logger, interceptor, snapshot generator unit-tested.
+- 🧪 **Well tested** — 45 unit tests covering ring buffer, masker, logger, interceptor, snapshot, and prompt formatter.
 - 🌍 **All platforms** — Android, iOS, macOS, Windows, Linux, Web.
 
 ---
@@ -51,12 +87,14 @@ history, provider values, and logs at the moment things went wrong.
 flutter pub add flutterforge_ai
 ```
 
-Or add to `pubspec.yaml`:
+Or in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutterforge_ai: ^0.1.0
+  flutterforge_ai: ^0.1.1
 ```
+
+> **Dependency type:** `dependencies` (not `dev_dependencies`). The runtime APIs (`FFLogger`, `FFApiClient`, `FFDbHelper`) are called from production code paths; the devtools UI silently no-ops in release builds.
 
 ---
 
@@ -77,8 +115,12 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      observers: [FFStateObserver()],   // 2. track Riverpod state
-      child: const FFDevWrapper(child: MyApp()),  // 3. inject overlay
+      observers: [FFStateObserver()],  // 2. Track Riverpod state
+      child: MaterialApp(
+        // 3. Inject the devtools overlay inside MaterialApp.builder.
+        builder: (ctx, child) => FFDevWrapper(child: child ?? const SizedBox()),
+        home: const MyHomePage(),
+      ),
     ),
   );
 }
@@ -90,43 +132,43 @@ That's it. Tap the purple FAB for devtools, tap 🤖 for an AI snapshot.
 
 ## 🛠️ Usage
 
-### Make API calls
+### Make API calls (auto-captured)
 
 ```dart
 final dio = FFApiClient.instance.dio;
 final resp = await dio.get('/users');
 ```
 
-Every request appears live in the **API Inspector** tab with method, URL,
-status, duration, full request/response, and a ready-to-paste cURL command.
+Every request appears live in the **API Inspector** tab with method, URL, status, duration, full request/response, and a ready-to-paste cURL command.
 
-### Log anything
+### Log anything (auto-captured)
 
 ```dart
 FFLogger.info('User logged in');
 FFLogger.error('Payment failed', error: e, stackTrace: st);
 ```
 
-All entries show up in the **Log Viewer**, filterable by level.
+All entries show up in the **Log Viewer**, filterable by level (verbose → fatal).
 
-### Query the database
+### Query the database (auto-visible)
 
 ```dart
 final db = FFDbHelper.instance.database;
 await db.insert('users', {'name': 'Alice'});
 ```
 
-Open the **Database Console** tab to browse tables, inspect schema, and run
-ad-hoc SQL.
+Open the **Database Console** tab to browse tables, inspect schema, and run ad-hoc SQL.
 
-### Generate an AI snapshot
+### Generate an AI snapshot (one call)
 
 ```dart
-final snap = await FFSnapshotGenerator.generate(problem: 'Login loop');
+final snap   = await FFSnapshotGenerator.generate(problem: 'Login loop');
 final prompt = FFPromptFormatter.format(snap);
 await FFClipboardHelper.copy(prompt);
 // Snackbar: "✅ Prompt copied. Paste to your AI assistant."
 ```
+
+Or just tap the 🤖 FAB and use the built-in preview screen.
 
 ---
 
@@ -159,6 +201,27 @@ const config = FFConfig(
 );
 ```
 
+For a release-tuned preset:
+
+```dart
+FFConfig.production(appName: 'My App');  // All devtools off, even in debug.
+```
+
+---
+
+## 📸 Screenshots
+
+The `doc/images/` folder is the home for all recordings. Drop these four in to make the README self-explanatory:
+
+| File                       | Shows                                           |
+| -------------------------- | ----------------------------------------------- |
+| `doc/images/hero.gif`      | Full workflow: bug → snapshot → AI fix (hero).  |
+| `doc/images/dashboard.png` | 4-tab devtools dashboard.                       |
+| `doc/images/api.png`       | API Inspector with cURL export.                 |
+| `doc/images/snapshot.png`  | Snapshot preview + "Copy AI prompt" button.     |
+
+See [doc/WORKFLOW.md](doc/WORKFLOW.md) for the step-by-step script.
+
 ---
 
 ## 🏗️ Architecture
@@ -173,8 +236,8 @@ const config = FFConfig(
 │   └───┬────┘  └───┬───┘  └────┬─────┘  └───────┬───────┘    │
 │       ▼           ▼           ▼                ▼            │
 │   ┌────────┐  ┌─────────┐ ┌─────────┐   ┌──────────┐        │
-│   │Log store│ │Schema   │ │API store│   │State store│       │
-│   │(ring)   │ │+ runner │ │(ring)   │   │(ring)    │        │
+│   │Log store│ │Schema + │ │API store│   │State store│       │
+│   │(ring)   │ │SQL runr.│ │(ring)   │   │(ring)    │        │
 │   └────┬────┘ └─────────┘ └────┬────┘   └─────┬────┘        │
 │        ▼           ▼           ▼              ▼             │
 │       ┌──────────────────────────────────────────┐          │
@@ -198,13 +261,13 @@ See [doc/architecture.md](doc/architecture.md) for the deep dive.
 ## 🤖 The AI Debug Workflow
 
 1. Your app hits a bug in development.
-2. Tap the green 🤖 FAB (or shake the device, or press Alt+F12 → **AI Snapshot**).
+2. Tap the green 🤖 FAB (or shake, or Alt+F12 → **AI Snapshot**).
 3. Optionally type the symptom ("Login loop after OAuth").
 4. Tap **Copy AI prompt**.
 5. Paste into ChatGPT / Claude / Cursor / Cody.
 6. Get a targeted, contextual fix.
 
-Example prompt (auto-generated):
+Example auto-generated prompt:
 
 ```
 I'm debugging a Flutter app. Here's the complete app context captured by
@@ -214,8 +277,8 @@ PROBLEM: Login loop after OAuth
 
 APP CONTEXT:
 {
-  "flutterforge_version": "0.1.0",
-  "app": { "name": "My App", "version": "1.2.3" },
+  "flutterforge_version": "0.1.1",
+  "app":    { "name": "My App", "version": "1.2.3" },
   "device": { "platform": "android", "os_version": "14", "model": "Pixel 7" },
   "database": { "tables": [ … ] },
   "api_logs": {
@@ -242,44 +305,28 @@ Please:
 ## ❓ FAQ
 
 **Does FlutterForge AI ship in my release build?**
-Every devtool, the shake detector, the floating buttons, and the snapshot
-generator are gated behind `!kReleaseMode`. In release, `FFDevWrapper` becomes
-a pass-through and `FFSnapshotGenerator.generate()` returns an empty snapshot.
+Yes, it's imported, but every devtool, the shake detector, the floating buttons, and the snapshot generator are gated behind `!kReleaseMode`. In release, `FFDevWrapper` becomes a pass-through and `FFSnapshotGenerator.generate()` returns an empty snapshot.
 
 **Does the AI see my raw auth tokens?**
-No — everything goes through `FFSensitiveDataMasker`. `Authorization`,
-`Cookie`, `X-API-Key` headers, `password` / `token` / `secret` body keys, and
-`?token=` URL params are replaced with `***` before the call is even stored.
+No — everything goes through `FFSensitiveDataMasker`. `Authorization`, `Cookie`, `X-API-Key` headers, `password` / `token` / `secret` body keys, and `?token=` URL params are replaced with `***` before the call is even stored.
 
-**What about my Bearer token in the cURL export?**
-Same masker runs on `APICall.toCurl()`.
+**Should this be a `dependency` or `dev_dependency`?**
+Normal **`dependencies:`**. `FFLogger`, `FFApiClient`, and `FFDbHelper` are called from production code and must compile in release. Use `FFConfig.production(appName: …)` if you want every devtool silent.
 
 **Is `sqflite_dev` required?**
-No. It's an **optional** peer dependency. If you add it to your
-`dev_dependencies`, the web workbench starts on port 8080 in debug; if not,
-the rest of the DB features still work.
+No. It's an **optional** peer dependency. Add it to your `dev_dependencies` and the web workbench starts on port 8080 in debug; without it, the rest of the DB features still work.
 
 **Can I use a different state manager?**
-The package ships a Riverpod `ProviderObserver`. For Bloc, Provider, etc.,
-just don't mount `FFStateObserver` — the rest of the devtools stays useful.
-
-**Does the snapshot include PII?**
-The automated masking covers common fields. Review the generated JSON before
-pasting to a third-party AI if you handle regulated data.
+The package ships a Riverpod `ProviderObserver`. For Bloc / Provider / etc., just don't mount `FFStateObserver` — the DB / API / log surfaces stay useful.
 
 **Does it work on web?**
-Yes, with a few native features (sqflite workbench, shake detection) disabled
-automatically.
+Yes. Native-only features (`sqflite` workbench, shake detection) are skipped automatically; everything else works.
 
 **How much memory does it use?**
-Everything lives in fixed-size ring buffers you configure
-(`maxLogsStored`, `maxApiCallsStored`, …). Default total footprint in debug is
-~1 MB.
+Everything lives in fixed-size ring buffers you configure (`maxLogsStored`, `maxApiCallsStored`, …). Default footprint in debug is ~1 MB.
 
 **Can I persist snapshots?**
-Set `persistSnapshots: true` and the last snapshot is stored via
-`SharedPreferences`. Read it back with
-`FFSnapshotGenerator.lastPersistedJson()`.
+Set `persistSnapshots: true` and the last snapshot is stored via `SharedPreferences`. Read it back with `FFSnapshotGenerator.lastPersistedJson()`.
 
 **How do I contribute?**
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
@@ -291,9 +338,11 @@ See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 - GraphQL interceptor parity
 - Bloc / Provider observer adapters
 - Supabase / Firebase native adapters
-- On-device AI assistant using a local LLM
-- Inline "diff" in the State Viewer
+- Inline "diff" view in the State Viewer
 - Time-travel debugger for state events
+- CLI (`flutterforge init`) — scaffolds devtools boilerplate into an existing app
+- VS Code extension — inspect DB / logs / trigger AI debug from the IDE
+- Remote debug aggregator — opt-in server that receives snapshots from QA devices
 
 ---
 
