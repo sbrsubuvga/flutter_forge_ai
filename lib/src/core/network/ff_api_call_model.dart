@@ -81,8 +81,7 @@ class FFApiCall {
   final String? curl;
 
   /// Duration in milliseconds, or null while pending.
-  int? get durationMs =>
-      responseTime?.difference(requestTime).inMilliseconds;
+  int? get durationMs => responseTime?.difference(requestTime).inMilliseconds;
 
   /// Whether the call has a 2xx response.
   bool get isSuccess =>

@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../ai/ff_ai_config.dart';
+import '../../ai/ff_ai_settings_store.dart';
 import '../../snapshot/ff_prompt_formatter.dart';
 import '../../snapshot/ff_snapshot_generator.dart';
 import '../../snapshot/ff_snapshot_model.dart';
 import '../../utils/ff_clipboard_helper.dart';
 import '../widgets/ff_empty_state.dart';
 import '../widgets/ff_json_viewer.dart';
+import 'ai_settings_screen.dart';
+import 'diagnose_result_screen.dart';
 
 /// Preview screen for a generated snapshot.
 ///
-/// Offers one-tap copy / share / save actions; copying the AI-ready prompt
-/// is the main flow.
+/// Offers one-tap copy, share, save, AND "Diagnose with AI" — the last of
+/// these round-trips the snapshot through the configured LLM (BYO key) and
+/// renders the response in [DiagnoseResultScreen].
 class SnapshotPreviewScreen extends StatefulWidget {
   /// Creates the screen.
   const SnapshotPreviewScreen({this.initialProblem, super.key});
@@ -72,6 +77,37 @@ class _SnapshotPreviewScreenState extends State<SnapshotPreviewScreen> {
     await FFSnapshotGenerator.share(_snapshot!);
   }
 
+  Future<void> _diagnose() async {
+    final FFSnapshot? snap = _snapshot;
+    if (snap == null) return;
+
+    final FFAiSettingsStore store = await FFAiSettingsStore.load();
+    FFAiConfig config = store.read();
+
+    if (!config.isConfigured) {
+      if (!mounted) return;
+      final FFAiConfig? returned = await Navigator.of(context).push<FFAiConfig>(
+        MaterialPageRoute<FFAiConfig>(
+          builder: (_) => const AiSettingsScreen(),
+        ),
+      );
+      if (returned == null) return;
+      config = returned;
+      if (!config.isConfigured) return;
+    }
+
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => DiagnoseResultScreen(
+          snapshot: snap,
+          config: config,
+          problem: _problem.text,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +126,15 @@ class _SnapshotPreviewScreenState extends State<SnapshotPreviewScreen> {
               tooltip: 'Copy JSON',
             ),
           ],
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'AI settings',
+            onPressed: () => Navigator.of(context).push<FFAiConfig>(
+              MaterialPageRoute<FFAiConfig>(
+                builder: (_) => const AiSettingsScreen(),
+              ),
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -144,13 +189,28 @@ class _SnapshotPreviewScreenState extends State<SnapshotPreviewScreen> {
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.content_copy),
-                  label: const Text('Copy AI prompt & paste to assistant'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                  onPressed: _copyPrompt,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.auto_fix_high),
+                        label: const Text('Diagnose with AI'),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                        ),
+                        onPressed: _diagnose,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      tooltip: 'Copy AI prompt',
+                      icon: const Icon(Icons.content_copy),
+                      onPressed: _copyPrompt,
+                      style: IconButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

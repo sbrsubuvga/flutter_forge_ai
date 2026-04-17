@@ -23,7 +23,8 @@ dependencies:
 ''';
 
   test('adds flutterforge_ai to dependencies', () async {
-    File(p.join(tmp.path, 'pubspec.yaml')).writeAsStringSync(validFlutterPubspec);
+    File(p.join(tmp.path, 'pubspec.yaml'))
+        .writeAsStringSync(validFlutterPubspec);
 
     final FlutterForgeRunner runner = FlutterForgeRunner();
     final int? code = await runner.run(<String>[

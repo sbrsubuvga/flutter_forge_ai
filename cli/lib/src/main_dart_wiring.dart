@@ -108,8 +108,8 @@ $preserved
   static String _stripImports(String source) {
     return source
         .split('\n')
-        .where((String line) =>
-            !RegExp(r'''^\s*import\s+['"]''').hasMatch(line))
+        .where(
+            (String line) => !RegExp(r'''^\s*import\s+['"]''').hasMatch(line))
         .join('\n');
   }
 

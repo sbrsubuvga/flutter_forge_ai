@@ -123,7 +123,8 @@ void main() {
     });
 
     test('imports flutterforge_ai', () {
-      expect(wired, contains("import 'package:flutterforge_ai/flutterforge_ai.dart';"));
+      expect(wired,
+          contains("import 'package:flutterforge_ai/flutterforge_ai.dart';"));
     });
 
     test('imports flutter_riverpod', () {

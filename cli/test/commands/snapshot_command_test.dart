@@ -67,8 +67,7 @@ void main() {
     final File bad = File(p.join(tmp.path, 'bad.json'))
       ..writeAsStringSync('{not json');
     expect(
-      await FlutterForgeRunner()
-          .run(<String>['snapshot', 'view', bad.path]),
+      await FlutterForgeRunner().run(<String>['snapshot', 'view', bad.path]),
       isNonZero,
     );
   });

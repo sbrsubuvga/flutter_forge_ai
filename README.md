@@ -54,6 +54,7 @@ Not promises — these are shipped and covered by tests.
 | Riverpod state viewer (live + history)       | `FFStateObserver()` (as `ProviderScope` observer)      | State tab                            |
 | Colour-coded log viewer with filters         | `FFLogger.info` / `.error` / `.warning` / …            | Logs tab                             |
 | AI Debug Snapshot (the killer flow)          | `FFSnapshotGenerator.generate(problem: '...')`         | 🤖 FAB → preview → Copy AI prompt    |
+| **One-tap Diagnose with AI** (BYO key)       | `FFAiClient.forConfig(config).diagnose(...)`           | 🤖 FAB → preview → "Diagnose with AI"|
 | Sensitive-data masking                       | automatic on all captures                              | —                                    |
 | Release-mode auto-disable                    | `kReleaseMode` gate                                    | —                                    |
 | Shake / Alt+F12 / draggable FAB triggers     | all wired by `FFDevWrapper`                            | —                                    |

@@ -101,7 +101,8 @@ class _PromptSubcommand extends _SnapshotSubcommand {
       'Emit an AI-ready prompt wrapping the snapshot (pipe into pbcopy / xclip).';
 
   @override
-  String get invocation => 'flutterforge snapshot prompt <file.json> [--problem "..."]';
+  String get invocation =>
+      'flutterforge snapshot prompt <file.json> [--problem "..."]';
 
   @override
   Future<int> body() async {

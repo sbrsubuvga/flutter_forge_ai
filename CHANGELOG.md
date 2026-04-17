@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-17
+
+### Added — "Diagnose with AI" (the killer moment)
+- **New `src/ai/` module** wiring a bring-your-own-key LLM call directly into the snapshot preview:
+  - `FFAiProvider` enum — `anthropic` (Claude Messages API) + `openai` (Chat Completions, also works with Azure OpenAI / Ollama proxies via the `baseUrl` override).
+  - `FFAiConfig` — immutable config with `effectiveModel` / `effectiveBaseUrl` fallbacks. `toJsonSansKey()` guarantees the API key is never serialised alongside snapshots.
+  - `FFAiClient.forConfig(config)` factory dispatching to the right provider implementation; tests inject a mock `Dio`.
+  - `FFAnthropicClient` + `FFOpenAiClient` — concrete impls, both handle non-2xx responses as `FFAiException` (with status code + raw provider body for easier debugging).
+  - `FFAiSettingsStore` — `SharedPreferences`-backed persistence under the `flutterforge.ai.*` namespace.
+  - `FFAiPrompt` — opinionated system prompt + user-prompt builder that embeds the snapshot JSON and the problem statement.
+- **New UI**:
+  - `AiSettingsScreen` — provider picker, key/model/base-URL inputs, show/hide toggle, clear-key action.
+  - `DiagnoseResultScreen` — fires the diagnosis, shows a spinner, renders the response as selectable text with `FFAiResponse` metadata chips (provider, model, token counts, finish reason), retry button, settings shortcut.
+  - Snapshot preview screen now has a **"Diagnose with AI"** primary button (plus a settings gear in the app bar); the old "Copy AI prompt" stays as a secondary action so the manual workflow remains available.
+- Tests: `FFAiConfig` behaviour, `FFAnthropicClient` happy path + auth-error path (mocked Dio), `FFAiProviderX` defaults.
+
+### Changed
+- Version bumped `0.1.2` → `0.2.0` (new public API surface).
+- Barrel re-exports the new `ai/` modules and the two new screens.
+
 ## [0.1.2] - 2026-04-17
 
 ### Added

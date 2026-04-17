@@ -85,12 +85,10 @@ class InitCommand extends Command<int> {
       return 1;
     }
 
-    final String appName =
-        appNameArg ?? doc['name']?.toString() ?? 'My App';
+    final String appName = appNameArg ?? doc['name']?.toString() ?? 'My App';
 
     final YamlMap? deps = doc['dependencies'] as YamlMap?;
-    final bool hasFlutterforge =
-        deps != null && deps.containsKey(kPackageName);
+    final bool hasFlutterforge = deps != null && deps.containsKey(kPackageName);
     final bool hasRiverpod =
         deps != null && deps.containsKey('flutter_riverpod');
 
@@ -142,8 +140,8 @@ class InitCommand extends Command<int> {
       _logger.info('');
       _logger.info('Next steps:');
       if (!runPubGet) _logger.hint('flutter pub get');
-      _logger.hint(
-          'Paste the snippet below into `lib/main.dart` or equivalent.');
+      _logger
+          .hint('Paste the snippet below into `lib/main.dart` or equivalent.');
       _logger.info('');
       _logger.info(_mainSnippet(appName));
     }
@@ -159,8 +157,7 @@ class InitCommand extends Command<int> {
   }) async {
     final File mainFile = File(p.join(root, 'lib', 'main.dart'));
     if (!mainFile.existsSync()) {
-      _logger.warning(
-          '--auto-wire: lib/main.dart not found — skipping.');
+      _logger.warning('--auto-wire: lib/main.dart not found — skipping.');
       return 0;
     }
     final String original = mainFile.readAsStringSync();
@@ -219,8 +216,7 @@ class InitCommand extends Command<int> {
       if (result.exitCode == 0) {
         _logger.success('flutter pub get OK');
       } else {
-        _logger.warning(
-            'flutter pub get exited ${result.exitCode}. '
+        _logger.warning('flutter pub get exited ${result.exitCode}. '
             'Run it manually to see the error.');
         final String stderr = result.stderr.toString();
         if (stderr.isNotEmpty) _logger.dim(stderr);

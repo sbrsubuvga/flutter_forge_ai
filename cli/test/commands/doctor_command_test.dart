@@ -30,7 +30,8 @@ dependencies:
     sdk: flutter
 ''');
     Directory(p.join(tmp.path, 'lib')).createSync();
-    File(p.join(tmp.path, 'lib', 'main.dart')).writeAsStringSync('void main() {}');
+    File(p.join(tmp.path, 'lib', 'main.dart'))
+        .writeAsStringSync('void main() {}');
     expect(await runDoctor(), isNonZero);
   });
 

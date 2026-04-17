@@ -65,15 +65,13 @@ class DoctorCommand extends Command<int> {
 
     if (!hasPackage) {
       if (fix) {
-        final YamlEditor editor =
-            YamlEditor(pubspec.readAsStringSync());
+        final YamlEditor editor = YamlEditor(pubspec.readAsStringSync());
         editor.update(
           <String>['dependencies', kPackageName],
           kPackageVersionConstraint,
         );
         pubspec.writeAsStringSync(editor.toString());
-        _logger.success(
-            '$kPackageName added to pubspec.yaml (--fix applied)');
+        _logger.success('$kPackageName added to pubspec.yaml (--fix applied)');
         fixesApplied++;
         pubspecDoc = loadYaml(pubspec.readAsStringSync()) as YamlMap;
         deps = pubspecDoc['dependencies'] as YamlMap?;
@@ -94,7 +92,8 @@ class DoctorCommand extends Command<int> {
           'flutter_riverpod listed (optional, for FFStateObserver) — not configured');
       _logger.hint('Add to pubspec.yaml: flutter_riverpod: ^2.5.1');
     } else {
-      _logger.success('flutter_riverpod listed (optional, for FFStateObserver)');
+      _logger
+          .success('flutter_riverpod listed (optional, for FFStateObserver)');
     }
 
     final File? mainFile = _findMainFile(root);

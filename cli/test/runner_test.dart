@@ -20,7 +20,12 @@ void main() {
 
     test('help output mentions every command', () async {
       final String help = runner.usage;
-      for (final String cmd in <String>['init', 'doctor', 'snapshot', 'version']) {
+      for (final String cmd in <String>[
+        'init',
+        'doctor',
+        'snapshot',
+        'version'
+      ]) {
         expect(help, contains(cmd), reason: 'Missing $cmd in help');
       }
     });

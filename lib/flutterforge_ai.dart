@@ -61,6 +61,18 @@ export 'src/snapshot/ff_prompt_formatter.dart';
 export 'src/snapshot/ff_snapshot_generator.dart';
 export 'src/snapshot/ff_snapshot_model.dart';
 
+// AI — bring-your-own-key "Diagnose with AI" flow.
+export 'src/ai/ff_ai_client.dart' show FFAiClient;
+export 'src/ai/ff_ai_config.dart';
+export 'src/ai/ff_ai_prompt.dart';
+export 'src/ai/ff_ai_provider.dart';
+export 'src/ai/ff_ai_response.dart';
+export 'src/ai/ff_ai_settings_store.dart';
+export 'src/ai/ff_anthropic_client.dart' show FFAnthropicClient;
+export 'src/ai/ff_openai_client.dart' show FFOpenAiClient;
+export 'src/devtools/screens/ai_settings_screen.dart';
+export 'src/devtools/screens/diagnose_result_screen.dart';
+
 // Devtools (widgets).
 export 'src/devtools/ff_dev_dashboard.dart';
 export 'src/devtools/ff_dev_wrapper.dart';
