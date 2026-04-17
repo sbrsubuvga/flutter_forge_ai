@@ -8,16 +8,22 @@ on:
 
 jobs:
   analyze-and-test:
+    name: "Flutter ${{ matrix.flutter-version }}"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        flutter-channel: [stable, beta]
+        # Pin to a known-good stable. Bump deliberately; floating to `stable`
+        # means a new Flutter release can break CI for reasons unrelated to
+        # this commit.
+        flutter-version: ["3.41.0"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          channel: ${{ matrix.flutter-channel }}
+          flutter-version: ${{ matrix.flutter-version }}
+          channel: stable
 
       - name: Print versions
         run: |
@@ -37,12 +43,10 @@ jobs:
         run: flutter test --coverage
 
       - name: Upload coverage to Codecov
-        if: matrix.flutter-channel == 'stable'
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
           fail_ci_if_error: false
 
       - name: Pub publish dry run
-        if: matrix.flutter-channel == 'stable'
         run: flutter pub publish --dry-run
