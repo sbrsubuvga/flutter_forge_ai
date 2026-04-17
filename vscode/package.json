@@ -3,7 +3,7 @@
   "displayName": "FlutterForge AI",
   "description": "Open, explore, and copy AI prompts from AI Debug Snapshots produced by the flutterforge_ai Flutter package.",
   "version": "0.2.0",
-  "publisher": "sbrsubuvga",
+  "publisher": "subairanchukandan",
   "engines": {
     "vscode": "^1.85.0"
   },
