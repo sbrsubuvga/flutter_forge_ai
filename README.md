@@ -13,6 +13,8 @@
 
 Tap the 🤖 button in your app, paste the generated JSON into ChatGPT / Claude / Cursor, and get an accurate fix in seconds — complete with the database state, API history, provider values, and logs at the moment things went wrong.
 
+> 💡 This Flutter package is **one of four components**. The full ecosystem also ships a CLI (`flutterforge init`/`doctor`/`snapshot`), a VS Code extension, and an optional self-hosted cloud receiver. See [ECOSYSTEM.md](ECOSYSTEM.md) for the overview.
+
 <p align="center">
   <img src="doc/images/hero.gif" alt="FlutterForge AI debug workflow" width="720" />
   <br/>

@@ -1,0 +1,41 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1a1a1a;
+  --bg: #ffffff;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #6366f1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #f4f4f5;
+    --bg: #0a0a0a;
+    --muted: #9ca3af;
+    --border: #27272a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+th { color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+
+pre {
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 12.5px;
+}

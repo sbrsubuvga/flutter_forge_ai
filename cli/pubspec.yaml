@@ -1,0 +1,29 @@
+name: flutterforge_ai_cli
+description: Command-line companion for flutterforge_ai — scaffold, health-check, and inspect AI debug snapshots.
+version: 0.1.0
+homepage: https://github.com/sbrsubuvga/flutter_forge_ai
+repository: https://github.com/sbrsubuvga/flutter_forge_ai
+issue_tracker: https://github.com/sbrsubuvga/flutter_forge_ai/issues
+
+topics:
+  - cli
+  - flutter
+  - debugging
+  - ai
+  - scaffolding
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+executables:
+  flutterforge: flutterforge
+
+dependencies:
+  args: ^2.5.0
+  path: ^1.9.0
+  yaml: ^3.1.2
+  yaml_edit: ^2.2.1
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0

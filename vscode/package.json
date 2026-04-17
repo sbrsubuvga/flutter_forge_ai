@@ -1,0 +1,75 @@
+{
+  "name": "flutterforge-ai",
+  "displayName": "FlutterForge AI",
+  "description": "Open and explore AI Debug Snapshots produced by the flutterforge_ai Flutter package.",
+  "version": "0.1.0",
+  "publisher": "sbrsubuvga",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "flutter",
+    "dart",
+    "debug",
+    "ai",
+    "snapshot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sbrsubuvga/flutter_forge_ai"
+  },
+  "bugs": {
+    "url": "https://github.com/sbrsubuvga/flutter_forge_ai/issues"
+  },
+  "homepage": "https://github.com/sbrsubuvga/flutter_forge_ai/tree/main/vscode",
+  "license": "MIT",
+  "main": "./out/extension.js",
+  "icon": "media/icon.png",
+  "activationEvents": [
+    "onLanguage:json",
+    "onCommand:flutterforge.openSnapshot",
+    "onCommand:flutterforge.copyAiPrompt"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "flutterforge.openSnapshot",
+        "title": "FlutterForge: Open AI Debug Snapshot…",
+        "category": "FlutterForge"
+      },
+      {
+        "command": "flutterforge.copyAiPrompt",
+        "title": "FlutterForge: Copy AI Prompt from Snapshot…",
+        "category": "FlutterForge"
+      }
+    ],
+    "configuration": {
+      "title": "FlutterForge AI",
+      "properties": {
+        "flutterforge.defaultSnapshotDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Directory to open by default when picking a snapshot file."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.9",
+    "typescript": "^5.4.5"
+  }
+}
