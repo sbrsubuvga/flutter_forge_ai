@@ -1,0 +1,49 @@
+name: flutterforge_ai
+description: AI-Ready Flutter template with built-in DB console, API inspector, state viewer, log viewer, and AI debug snapshots. Build observable apps that AI can debug with full context.
+version: 0.1.0
+homepage: https://github.com/sbrsubuvga/flutter_forge_ai
+repository: https://github.com/sbrsubuvga/flutter_forge_ai
+issue_tracker: https://github.com/sbrsubuvga/flutter_forge_ai/issues
+documentation: https://pub.dev/documentation/flutterforge_ai/latest/
+
+topics:
+  - debugging
+  - devtools
+  - ai
+  - inspector
+  - logger
+
+platforms:
+  android:
+  ios:
+  macos:
+  windows:
+  linux:
+  web:
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  dio: ^5.7.0
+  flutter_riverpod: ^2.5.1
+  logger: ^2.4.0
+  flutter_dotenv: ^5.1.0
+  pretty_dio_logger: ^1.4.0
+  sensors_plus: ^6.0.1
+  device_info_plus: ^10.1.2
+  package_info_plus: ^8.0.2
+  shared_preferences: ^2.3.2
+  share_plus: ^10.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  mocktail: ^1.0.4
+  build_runner: ^2.4.11

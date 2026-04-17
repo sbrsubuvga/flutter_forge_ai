@@ -1,0 +1,42 @@
+# Root build / test caches.
+build/
+.dart_tool/
+coverage/
+pubspec.lock
+
+# Original spec lives in docs/ — not part of the package.
+docs/
+
+# CI + editor metadata.
+.github/
+.idea/
+.vscode/
+*.iml
+.fvm/
+
+# Tests.
+test/
+
+# Example app platform folders (too large & unnecessary for pub).
+example/ios/
+example/android/
+example/macos/
+example/linux/
+example/windows/
+example/web/
+example/build/
+example/.dart_tool/
+example/.flutter-plugins
+example/.flutter-plugins-dependencies
+example/.packages
+example/.idea/
+example/pubspec.lock
+example/analysis_options.yaml
+
+# Docs output folder if dartdoc was run locally.
+doc/api/
+doc/images/
+
+# OS / misc.
+.DS_Store
+Thumbs.db

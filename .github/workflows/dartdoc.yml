@@ -1,0 +1,22 @@
+name: Generate docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  dartdoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: dart doc --output=doc/api
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dartdoc
+          path: doc/api
