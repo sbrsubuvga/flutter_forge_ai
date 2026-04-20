@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1] - 2026-04-18
+
+### Added
+- `example/README.md` — end-to-end workflow examples covering auto-wire,
+  doctor, snapshot inspection, and CI usage. Closes the remaining 10/160
+  pub.dev points ("Package has an example").
+
+### Changed
+- Target package constraint bumped to `^0.3.0` so `init` writes the version
+  that ships Riverpod-3 compatibility and the `Diagnose with AI` screen.
+- Version bumped 0.2.0 → 0.2.1.
+
 ## [0.2.0] - 2026-04-17
 
 ### Added
