@@ -6,16 +6,18 @@ import 'ff_state_store.dart';
 
 /// Riverpod [ProviderObserver] that feeds [FFStateStore].
 ///
-/// Compatible with `flutter_riverpod ^2.5.x`.
+/// Uses the Riverpod 3.x observer API (`ProviderObserverContext`). Older
+/// Riverpod 2.x apps should continue to work against flutterforge_ai
+/// `0.2.x` which pinned `^2.5.1` — see the v0.3.0 CHANGELOG for the
+/// upgrade path.
 ///
-/// Use by attaching to [ProviderScope.observers] at app startup:
 /// ```dart
 /// ProviderScope(
 ///   observers: [FFStateObserver()],
 ///   child: MyApp(),
 /// );
 /// ```
-class FFStateObserver extends ProviderObserver {
+final class FFStateObserver extends ProviderObserver {
   /// Creates the observer.
   ///
   /// * [store] — where events are sent. Defaults to the global store owned
@@ -45,31 +47,30 @@ class FFStateObserver extends ProviderObserver {
   FFStateStore? get _resolved =>
       _overrideStore ?? _store ?? _FFStateObserverStoreResolver.resolve();
 
-  bool _allow(ProviderBase<Object?> provider) {
+  bool _allow(ProviderObserverContext context) {
     if (_prefixes.isEmpty) return true;
-    final String type = provider.runtimeType.toString();
+    final String type = context.provider.runtimeType.toString();
     return _prefixes.any(type.startsWith);
   }
 
-  String _name(ProviderBase<Object?> provider) =>
-      provider.name ?? provider.runtimeType.toString();
+  String _name(ProviderObserverContext context) =>
+      context.provider.name ?? context.provider.runtimeType.toString();
+
+  String _type(ProviderObserverContext context) =>
+      context.provider.runtimeType.toString();
 
   String _stringify(Object? value) =>
       FFPrettyPrinter.truncate(value?.toString() ?? 'null',
           maxLength: maxValueLength);
 
   @override
-  void didAddProvider(
-    ProviderBase<Object?> provider,
-    Object? value,
-    ProviderContainer container,
-  ) {
-    if (!_allow(provider)) return;
+  void didAddProvider(ProviderObserverContext context, Object? value) {
+    if (!_allow(context)) return;
     _resolved?.add(
       FFStateChange(
         type: FFStateChangeType.added,
-        providerName: _name(provider),
-        providerType: provider.runtimeType.toString(),
+        providerName: _name(context),
+        providerType: _type(context),
         newValue: _stringify(value),
       ),
     );
@@ -77,17 +78,16 @@ class FFStateObserver extends ProviderObserver {
 
   @override
   void didUpdateProvider(
-    ProviderBase<Object?> provider,
+    ProviderObserverContext context,
     Object? previousValue,
     Object? newValue,
-    ProviderContainer container,
   ) {
-    if (!_allow(provider)) return;
+    if (!_allow(context)) return;
     _resolved?.add(
       FFStateChange(
         type: FFStateChangeType.updated,
-        providerName: _name(provider),
-        providerType: provider.runtimeType.toString(),
+        providerName: _name(context),
+        providerType: _type(context),
         previousValue: _stringify(previousValue),
         newValue: _stringify(newValue),
       ),
@@ -95,33 +95,29 @@ class FFStateObserver extends ProviderObserver {
   }
 
   @override
-  void didDisposeProvider(
-    ProviderBase<Object?> provider,
-    ProviderContainer container,
-  ) {
-    if (!_allow(provider)) return;
+  void didDisposeProvider(ProviderObserverContext context) {
+    if (!_allow(context)) return;
     _resolved?.add(
       FFStateChange(
         type: FFStateChangeType.disposed,
-        providerName: _name(provider),
-        providerType: provider.runtimeType.toString(),
+        providerName: _name(context),
+        providerType: _type(context),
       ),
     );
   }
 
   @override
   void providerDidFail(
-    ProviderBase<Object?> provider,
+    ProviderObserverContext context,
     Object error,
     StackTrace stackTrace,
-    ProviderContainer container,
   ) {
-    if (!_allow(provider)) return;
+    if (!_allow(context)) return;
     _resolved?.add(
       FFStateChange(
         type: FFStateChangeType.failed,
-        providerName: _name(provider),
-        providerType: provider.runtimeType.toString(),
+        providerName: _name(context),
+        providerType: _type(context),
         error: error,
         stackTrace: stackTrace,
       ),
@@ -134,17 +130,12 @@ class FFStateObserver extends ProviderObserver {
 class _FFStateObserverStoreResolver {
   _FFStateObserverStoreResolver._();
 
-  /// The active store, set by FlutterForgeAI.init().
   static FFStateStore? _store;
 
-  /// Called by the SDK once the store is ready.
-  // ignore: use_setters_to_change_properties
   static void register(FFStateStore store) => _store = store;
 
-  /// Called by [FlutterForgeAI.reset].
   static void clear() => _store = null;
 
-  /// Currently-active store, if any.
   static FFStateStore? resolve() => _store;
 }
 

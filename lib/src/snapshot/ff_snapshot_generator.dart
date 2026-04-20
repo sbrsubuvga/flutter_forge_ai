@@ -215,16 +215,18 @@ class FFSnapshotGenerator {
   /// Shares the snapshot via the platform share sheet.
   static Future<void> share(FFSnapshot snapshot, {String? subject}) async {
     try {
+      final String resolvedSubject = subject ?? 'FlutterForge AI Debug Snapshot';
       final File? file = await saveToFile(snapshot);
-      if (file != null) {
-        await Share.shareXFiles(
-          <XFile>[XFile(file.path)],
-          subject: subject ?? 'FlutterForge AI Debug Snapshot',
-        );
-        return;
-      }
-      await Share.share(snapshot.toPrettyJson(),
-          subject: subject ?? 'FlutterForge AI Debug Snapshot');
+      final ShareParams params = file != null
+          ? ShareParams(
+              subject: resolvedSubject,
+              files: <XFile>[XFile(file.path)],
+            )
+          : ShareParams(
+              subject: resolvedSubject,
+              text: snapshot.toPrettyJson(),
+            );
+      await SharePlus.instance.share(params);
     } catch (e, st) {
       FFLogger.error('Snapshot share failed',
           error: e, stackTrace: st, tag: 'snapshot');

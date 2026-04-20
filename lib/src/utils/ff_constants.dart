@@ -9,7 +9,7 @@ class FFConstants {
   FFConstants._();
 
   /// Current package version. Kept in sync with `pubspec.yaml`.
-  static const String packageVersion = '0.2.0';
+  static const String packageVersion = '0.3.0';
 
   /// Human-readable package name used in logs and snapshots.
   static const String packageName = 'FlutterForge AI';

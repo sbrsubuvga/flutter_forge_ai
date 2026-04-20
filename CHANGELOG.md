@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-18
+
+### Changed — dependency refresh (fixes pub.dev "up-to-date" score)
+All direct dependencies now accept current-major versions:
+
+| Package              | Was         | Now (constraint)        |
+| -------------------- | ----------- | ----------------------- |
+| `flutter_riverpod`   | `^2.5.1`    | `>=2.5.1 <4.0.0` (3.x)  |
+| `device_info_plus`   | `^10.1.2`   | `>=10.1.2 <14.0.0`      |
+| `flutter_dotenv`     | `^5.1.0`    | `>=5.1.0 <7.0.0`        |
+| `package_info_plus`  | `^8.0.2`    | `>=8.0.2 <11.0.0`       |
+| `sensors_plus`       | `^6.0.1`    | `>=6.0.1 <8.0.0`        |
+| `share_plus`         | `^10.0.2`   | `>=10.0.2 <14.0.0`      |
+
+### ⚠ Breaking — Riverpod 3 only
+- `FFStateObserver` is rewritten for the Riverpod 3.x observer API
+  (`ProviderObserverContext` replaces the 2.x `(ProviderBase, …,
+  ProviderContainer)` signature). The class is now `final` to satisfy
+  Riverpod's `base` supertype modifier.
+- The class's **public** surface (`FFStateObserver({store, trackingPrefixes,
+  maxValueLength})`, `.storeForTesting`) is unchanged — most users won't
+  notice.
+- **Upgrade path for apps pinned to Riverpod 2.x**: stay on
+  `flutterforge_ai: ^0.2.x` (still on pub.dev) until you bump to Riverpod
+  3, then move to `^0.3.0`.
+
+### Fixed
+- `share_plus 13.x` deprecations — snapshot share now uses
+  `SharePlus.instance.share(ShareParams(...))` instead of the removed
+  `Share.shareXFiles` / `Share.share` static helpers.
+
 ## [0.2.0] - 2026-04-17
 
 ### Added — "Diagnose with AI" (the killer moment)

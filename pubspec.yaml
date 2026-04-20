@@ -1,6 +1,6 @@
 name: flutterforge_ai
 description: AI-Ready Flutter template with built-in DB console, API inspector, state viewer, log viewer, and AI debug snapshots. Build observable apps that AI can debug with full context.
-version: 0.2.0
+version: 0.3.0
 homepage: https://github.com/sbrsubuvga/flutter_forge_ai
 repository: https://github.com/sbrsubuvga/flutter_forge_ai
 issue_tracker: https://github.com/sbrsubuvga/flutter_forge_ai/issues
@@ -31,15 +31,17 @@ dependencies:
   sqflite: ^2.3.3
   path: ^1.9.0
   dio: ^5.7.0
-  flutter_riverpod: ^2.5.1
+  # Widened to allow Riverpod 3.x alongside 2.5.x. See FFStateObserver
+  # for the compatibility shim that handles both observer signatures.
+  flutter_riverpod: ">=2.5.1 <4.0.0"
   logger: ^2.4.0
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ">=5.1.0 <7.0.0"
   pretty_dio_logger: ^1.4.0
-  sensors_plus: ^6.0.1
-  device_info_plus: ^10.1.2
-  package_info_plus: ^8.0.2
+  sensors_plus: ">=6.0.1 <8.0.0"
+  device_info_plus: ">=10.1.2 <14.0.0"
+  package_info_plus: ">=8.0.2 <11.0.0"
   shared_preferences: ^2.3.2
-  share_plus: ^10.0.2
+  share_plus: ">=10.0.2 <14.0.0"
 
 dev_dependencies:
   flutter_test:
