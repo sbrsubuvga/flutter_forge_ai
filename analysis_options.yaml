@@ -7,6 +7,12 @@ analyzer:
     strict-raw-types: true
   exclude:
     - example/**
+    # Sibling packages each have their own pubspec + analysis_options.
+    # Letting the root analyzer reach into them breaks CI because their
+    # deps aren't resolved by the root `flutter pub get`.
+    - cli/**
+    - vscode/**
+    - cloud/**
     - "**/*.g.dart"
     - "**/*.freezed.dart"
   errors:
